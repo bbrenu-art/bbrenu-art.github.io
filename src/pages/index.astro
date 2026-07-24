@@ -45,7 +45,7 @@ import Layout from "../layouts/Layout.astro";
             <span class="col-dot dot-rose"></span>MONSTERS
           </h3>
 
-          <div class="gallery-item" style="--tilt:-1.2deg; --w:100%; --delay:0s">
+          <div class="gallery-item" style="--w:100%; --delay:0s">
             <div class="pixel-window">
               <div class="window-bar">
                 <span class="bar-dot bd-red"></span>
@@ -57,7 +57,7 @@ import Layout from "../layouts/Layout.astro";
             </div>
           </div>
 
-          <div class="gallery-item" style="--tilt:2deg; --w:78%; --delay:.12s; align-self:flex-end">
+          <div class="gallery-item" style="--w:78%; --delay:.12s; align-self:flex-end">
             <div class="pixel-window">
               <div class="window-bar">
                 <span class="bar-dot bd-red"></span>
@@ -69,7 +69,7 @@ import Layout from "../layouts/Layout.astro";
             </div>
           </div>
 
-          <div class="gallery-item" style="--tilt:-2.8deg; --w:65%; --delay:.24s; align-self:center">
+          <div class="gallery-item" style="--w:65%; --delay:.24s; align-self:center">
             <div class="pixel-window">
               <div class="window-bar">
                 <span class="bar-dot bd-red"></span>
@@ -88,7 +88,7 @@ import Layout from "../layouts/Layout.astro";
             <span class="col-dot dot-gold"></span>PORTRAITS
           </h3>
 
-          <div class="gallery-item" style="--tilt:1.8deg; --w:75%; --delay:.08s; align-self:flex-end">
+          <div class="gallery-item" style="--w:75%; --delay:.08s; align-self:flex-end">
             <div class="pixel-window">
               <div class="window-bar">
                 <span class="bar-dot bd-red"></span>
@@ -100,7 +100,7 @@ import Layout from "../layouts/Layout.astro";
             </div>
           </div>
 
-          <div class="gallery-item" style="--tilt:-0.6deg; --w:100%; --delay:.18s">
+          <div class="gallery-item" style="--w:100%; --delay:.18s">
             <div class="pixel-window">
               <div class="window-bar">
                 <span class="bar-dot bd-red"></span>
@@ -112,7 +112,7 @@ import Layout from "../layouts/Layout.astro";
             </div>
           </div>
 
-          <div class="gallery-item" style="--tilt:2.5deg; --w:70%; --delay:.28s; align-self:flex-start">
+          <div class="gallery-item" style="--w:70%; --delay:.28s; align-self:flex-start">
             <div class="pixel-window">
               <div class="window-bar">
                 <span class="bar-dot bd-red"></span>
@@ -131,7 +131,7 @@ import Layout from "../layouts/Layout.astro";
             <span class="col-dot dot-teal"></span>ENVIRONMENTS
           </h3>
 
-          <div class="gallery-item" style="--tilt:-1.5deg; --w:100%; --delay:.15s">
+          <div class="gallery-item" style="--w:100%; --delay:.15s">
             <div class="pixel-window">
               <div class="window-bar">
                 <span class="bar-dot bd-red"></span>
@@ -378,9 +378,9 @@ import Layout from "../layouts/Layout.astro";
     line-height: 1;
     letter-spacing: 0.04em;
     text-shadow:
-      0 0 30px rgba(212, 168, 67, 0.25),
-      0 0 60px rgba(212, 168, 67, 0.12),
-      0 0 120px rgba(212, 168, 67, 0.06);
+      0 0 30px rgba(212, 112, 138, 0.25),
+      0 0 60px rgba(212, 112, 138, 0.12),
+      0 0 120px rgba(212, 112, 138, 0.06);
   }
 
   .cursor-blink {
@@ -529,7 +529,7 @@ import Layout from "../layouts/Layout.astro";
   .gallery-item {
     width: var(--w, 100%);
     opacity: 0;
-    transform: translateY(36px) rotate(var(--tilt, 0deg));
+    transform: translateY(36px);
     transition:
       opacity 0.65s ease,
       transform 0.65s ease;
@@ -540,12 +540,12 @@ import Layout from "../layouts/Layout.astro";
 
   .gallery-item.visible {
     opacity: 1;
-    transform: translateY(0) rotate(var(--tilt, 0deg));
+    transform: translateY(0);
   }
 
   .gallery-item:hover {
     z-index: 10;
-    transform: translateY(-4px) rotate(0deg) scale(1.03) !important;
+    transform: translateY(-4px) scale(1.03) !important;
   }
 
   /* ── Pixel window frame ──────────────────────── */
@@ -603,7 +603,7 @@ import Layout from "../layouts/Layout.astro";
   .col-portraits .gallery-item:hover .pixel-window {
     border-color: var(--accent-gold);
     box-shadow:
-      0 0 16px rgba(212, 168, 67, 0.25),
+      0 0 16px rgba(212, 112, 138, 0.25),
       0 8px 32px rgba(0, 0, 0, 0.4);
   }
   .col-environments .gallery-item:hover .pixel-window {
@@ -684,7 +684,7 @@ import Layout from "../layouts/Layout.astro";
   }
 
   .social-link:hover {
-    background: rgba(212, 168, 67, 0.06);
+    background: rgba(212, 112, 138, 0.06);
     border-color: var(--accent-gold);
     transform: translateX(6px);
   }
@@ -860,10 +860,6 @@ import Layout from "../layouts/Layout.astro";
 
     .socials {
       padding: 3rem 1.2rem 4rem;
-    }
-
-    .gallery-item {
-      --tilt: 0deg !important;
     }
 
     .social-handle {
