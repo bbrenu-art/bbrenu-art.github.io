@@ -1,5 +1,57 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import fs from "node:fs";
+import path from "node:path";
+
+const galleryDir = path.join(process.cwd(), "public", "gallery");
+const files = fs.readdirSync(galleryDir).filter((f) => /\.(png|jpe?g|gif|webp)$/i.test(f));
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const themePattern = /^(.+?)_(\d+)\.\w+$/;
+const accentColors = ["rose", "gold", "teal", "purple"];
+
+interface GalleryImage {
+  filename: string;
+  src: string;
+  theme: string;
+  index: number;
+}
+
+const grouped = new Map<string, GalleryImage[]>();
+
+for (const file of files) {
+  const match = file.match(themePattern);
+  let theme: string;
+  let index: number;
+
+  if (match) {
+    theme = match[1];
+    index = parseInt(match[2], 10);
+  } else {
+    theme = "others";
+    index = 999;
+  }
+
+  if (!grouped.has(theme)) grouped.set(theme, []);
+  grouped.get(theme)!.push({
+    filename: file,
+    src: `${base}/gallery/${file}`,
+    theme,
+    index,
+  });
+}
+
+for (const images of grouped.values()) {
+  images.sort((a, b) => a.index - b.index);
+}
+
+if (grouped.has("others")) {
+  const others = grouped.get("others")!;
+  grouped.delete("others");
+  grouped.set("others", others);
+}
+
+const themes = Array.from(grouped.entries());
 ---
 
 <Layout>
@@ -38,118 +90,50 @@ import Layout from "../layouts/Layout.astro";
     <section class="gallery">
       <h2 class="section-title">// SELECTED WORKS</h2>
 
-      <div class="gallery-grid">
-        <!-- Column 1 — Monsters -->
-        <div class="gallery-column col-monsters">
-          <h3 class="column-title">
-            <span class="col-dot dot-rose"></span>MONSTERS
-          </h3>
+      {themes.map(([theme, images], themeIdx) => {
+        const colorClass = accentColors[themeIdx % accentColors.length];
+        const displayName = theme === "others" ? "OTHERS" : theme.toUpperCase();
+        const rowClass = `gallery-row row-${theme}`;
+        const needsPlaceholder = images.length < 3;
 
-          <div class="gallery-item" style="--w:100%; --delay:0s">
-            <div class="pixel-window">
-              <div class="window-bar">
-                <span class="bar-dot bd-red"></span>
-                <span class="bar-dot bd-yellow"></span>
-                <span class="bar-dot bd-green"></span>
-                <span class="bar-title">monster_01.png</span>
+        return (
+          <div class={rowClass} data-accent={colorClass}>
+            <div class="row-header">
+              <h3 class="row-title">
+                <span class={`col-dot dot-${colorClass}`}></span>{displayName}
+              </h3>
+              <div class="carousel-nav" aria-hidden="true">
+                <button class="carousel-btn carousel-prev" aria-label="Anterior">◄</button>
+                <button class="carousel-btn carousel-next" aria-label="Próximo">►</button>
               </div>
-              <img src="/gallery/monster1.png" alt="Criatura aranha monstruosa em pixel art — fundo ocre" loading="lazy" />
+            </div>
+            <div class="row-track-wrapper">
+              <div class="row-track">
+                {images.map((img, i) => (
+                  <div class="gallery-item" style={`--delay:${i * 0.12}s`}>
+                    <div class="pixel-window">
+                      <div class="window-bar">
+                        <span class="bar-dot bd-red"></span>
+                        <span class="bar-dot bd-yellow"></span>
+                        <span class="bar-dot bd-green"></span>
+                        <span class="bar-title">{img.filename}</span>
+                      </div>
+                      <img src={img.src} alt={`${displayName} — ${img.filename}`} loading="lazy" />
+                    </div>
+                  </div>
+                ))}
+                {needsPlaceholder && (
+                  <div class="env-placeholder">
+                    <span class="placeholder-border"></span>
+                    <p>More<br />coming soon...</p>
+                    <span class="placeholder-border"></span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-
-          <div class="gallery-item" style="--w:78%; --delay:.12s; align-self:flex-end">
-            <div class="pixel-window">
-              <div class="window-bar">
-                <span class="bar-dot bd-red"></span>
-                <span class="bar-dot bd-yellow"></span>
-                <span class="bar-dot bd-green"></span>
-                <span class="bar-title">monster_02.png</span>
-              </div>
-              <img src="/gallery/monster2.png" alt="Criatura tentacular ciclope em pixel art — fundo rosa" loading="lazy" />
-            </div>
-          </div>
-
-          <div class="gallery-item" style="--w:65%; --delay:.24s; align-self:center">
-            <div class="pixel-window">
-              <div class="window-bar">
-                <span class="bar-dot bd-red"></span>
-                <span class="bar-dot bd-yellow"></span>
-                <span class="bar-dot bd-green"></span>
-                <span class="bar-title">monster_03.png</span>
-              </div>
-              <img src="/gallery/monster3.png" alt="Criatura alada verde em pixel art — fundo roxo" loading="lazy" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Column 2 — Portraits -->
-        <div class="gallery-column col-portraits">
-          <h3 class="column-title">
-            <span class="col-dot dot-gold"></span>PORTRAITS
-          </h3>
-
-          <div class="gallery-item" style="--w:75%; --delay:.08s; align-self:flex-end">
-            <div class="pixel-window">
-              <div class="window-bar">
-                <span class="bar-dot bd-red"></span>
-                <span class="bar-dot bd-yellow"></span>
-                <span class="bar-dot bd-green"></span>
-                <span class="bar-title">portrait_02.png</span>
-              </div>
-              <img src="/gallery/portrait2.png" alt="Retrato pixel art de mulher com vestido floral — fundo verde" loading="lazy" />
-            </div>
-          </div>
-
-          <div class="gallery-item" style="--w:100%; --delay:.18s">
-            <div class="pixel-window">
-              <div class="window-bar">
-                <span class="bar-dot bd-red"></span>
-                <span class="bar-dot bd-yellow"></span>
-                <span class="bar-dot bd-green"></span>
-                <span class="bar-title">portrait_01.png</span>
-              </div>
-              <img src="/gallery/portrait1.png" alt="Retrato pixel art de mulher com óculos — fundo azul acinzentado" loading="lazy" />
-            </div>
-          </div>
-
-          <div class="gallery-item" style="--w:70%; --delay:.28s; align-self:flex-start">
-            <div class="pixel-window">
-              <div class="window-bar">
-                <span class="bar-dot bd-red"></span>
-                <span class="bar-dot bd-yellow"></span>
-                <span class="bar-dot bd-green"></span>
-                <span class="bar-title">portrait_03.png</span>
-              </div>
-              <img src="/gallery/portrait3.png" alt="Retrato pixel art de mulher com brincos — fundo terracota" loading="lazy" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Column 3 — Environments -->
-        <div class="gallery-column col-environments">
-          <h3 class="column-title">
-            <span class="col-dot dot-teal"></span>ENVIRONMENTS
-          </h3>
-
-          <div class="gallery-item" style="--w:100%; --delay:.15s">
-            <div class="pixel-window">
-              <div class="window-bar">
-                <span class="bar-dot bd-red"></span>
-                <span class="bar-dot bd-yellow"></span>
-                <span class="bar-dot bd-green"></span>
-                <span class="bar-title">architecture.png</span>
-              </div>
-              <img src="/gallery/architecture.png" alt="Casa isométrica em pixel art com carro e jardim — fundo azul" loading="lazy" />
-            </div>
-          </div>
-
-          <div class="env-placeholder">
-            <span class="placeholder-border"></span>
-            <p>More worlds<br />coming soon...</p>
-            <span class="placeholder-border"></span>
-          </div>
-        </div>
-      </div>
+        );
+      })}
     </section>
 
     <!-- ── Social links ───────────────────────── -->
@@ -204,7 +188,7 @@ import Layout from "../layouts/Layout.astro";
 </Layout>
 
 <!-- ═══════════════════════════════════════════════ -->
-<!-- SCROLL  LOGIC                                  -->
+<!-- SCROLL + CAROUSEL LOGIC                        -->
 <!-- ═══════════════════════════════════════════════ -->
 <script>
   const hero = document.getElementById("hero") as HTMLElement;
@@ -249,6 +233,53 @@ import Layout from "../layouts/Layout.astro";
     observer.observe(el);
   });
 
+  /* ── Carousel logic ─────────────────────────── */
+  document.querySelectorAll(".gallery-row").forEach((row) => {
+    const track = row.querySelector(".row-track") as HTMLElement;
+    const items = track.querySelectorAll(".gallery-item, .env-placeholder");
+    const prevBtn = row.querySelector(".carousel-prev") as HTMLButtonElement;
+    const nextBtn = row.querySelector(".carousel-next") as HTMLButtonElement;
+
+    if (items.length <= 3) return;
+
+    row.classList.add("has-carousel");
+
+    let page = 0;
+    const getItemsPerPage = () => {
+      if (window.innerWidth <= 600) return 1;
+      if (window.innerWidth <= 900) return 2;
+      return 3;
+    };
+
+    function updateCarousel() {
+      const perPage = getItemsPerPage();
+      const maxPage = Math.max(0, Math.ceil(items.length / perPage) - 1);
+      page = Math.min(page, maxPage);
+
+      const gap = 1.5 * 16;
+      const itemWidth = (track.parentElement!.clientWidth - gap * (perPage - 1)) / perPage;
+      const offset = page * (itemWidth + gap) * perPage;
+      track.style.transform = `translateX(-${offset}px)`;
+
+      prevBtn.disabled = page === 0;
+      nextBtn.disabled = page >= maxPage;
+    }
+
+    prevBtn.addEventListener("click", () => {
+      page = Math.max(0, page - 1);
+      updateCarousel();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      page++;
+      updateCarousel();
+    });
+
+    updateCarousel();
+    window.addEventListener("resize", updateCarousel);
+  });
+
+  /* ── Email copy ─────────────────────────────── */
   const emailLink = document.getElementById("email-link") as HTMLAnchorElement;
   const emailHandle = document.getElementById("email-handle") as HTMLElement;
   const email = emailLink.dataset.email!;
@@ -323,7 +354,6 @@ import Layout from "../layouts/Layout.astro";
     overflow: hidden;
   }
 
-  /* Subtle pixel-grid background */
   .hero-grid {
     position: absolute;
     inset: 0;
@@ -338,7 +368,6 @@ import Layout from "../layouts/Layout.astro";
     pointer-events: none;
   }
 
-  /* CRT scanline overlay */
   .hero::after {
     content: "";
     position: absolute;
@@ -485,29 +514,90 @@ import Layout from "../layouts/Layout.astro";
     margin: 0 auto;
   }
 
-  .gallery-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 2.5rem;
-    align-items: start;
+  .gallery-row {
+    margin-bottom: 4rem;
   }
 
-  .gallery-column {
+  .gallery-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .row-header {
     display: flex;
-    flex-direction: column;
-    gap: 1.8rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
   }
 
-  .column-title {
+  .row-title {
     font-family: var(--font-pixel);
     font-size: 0.85rem;
     color: var(--text-secondary);
     letter-spacing: 0.22em;
-    padding-bottom: 0.6rem;
-    border-bottom: 2px solid var(--border-color);
     display: flex;
     align-items: center;
     gap: 0.6rem;
+  }
+
+  .carousel-nav {
+    display: none;
+    gap: 0.5rem;
+  }
+
+  .gallery-row.has-carousel .carousel-nav {
+    display: flex;
+  }
+
+  .carousel-btn {
+    background: var(--bg-elevated);
+    border: 2px solid var(--border-color);
+    color: var(--text-muted);
+    font-family: var(--font-pixel);
+    font-size: 0.7rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease,
+      background 0.2s ease;
+  }
+
+  .carousel-btn:hover {
+    color: var(--accent-gold);
+    border-color: var(--accent-gold);
+    background: rgba(212, 112, 138, 0.08);
+  }
+
+  .carousel-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .row-track-wrapper {
+    overflow: hidden;
+    position: relative;
+  }
+
+  .row-track {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .gallery-row.has-carousel .row-track {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .gallery-row.has-carousel .gallery-item,
+  .gallery-row.has-carousel .env-placeholder {
+    min-width: calc((100% - 3rem) / 3);
+    flex-shrink: 0;
   }
 
   .col-dot {
@@ -524,10 +614,12 @@ import Layout from "../layouts/Layout.astro";
   .dot-teal {
     background: var(--accent-teal);
   }
+  .dot-purple {
+    background: var(--accent-purple);
+  }
 
   /* ── Gallery item (entry animation) ──────────── */
   .gallery-item {
-    width: var(--w, 100%);
     opacity: 0;
     transform: translateY(36px);
     transition:
@@ -593,27 +685,33 @@ import Layout from "../layouts/Layout.astro";
     display: block;
   }
 
-  /* Hover glow per category */
-  .col-monsters .gallery-item:hover .pixel-window {
+  /* Hover glow per category (dynamic via data-accent) */
+  .gallery-row[data-accent="rose"] .gallery-item:hover .pixel-window {
     border-color: var(--accent-rose);
     box-shadow:
       0 0 16px rgba(192, 112, 96, 0.25),
       0 8px 32px rgba(0, 0, 0, 0.4);
   }
-  .col-portraits .gallery-item:hover .pixel-window {
+  .gallery-row[data-accent="gold"] .gallery-item:hover .pixel-window {
     border-color: var(--accent-gold);
     box-shadow:
       0 0 16px rgba(212, 112, 138, 0.25),
       0 8px 32px rgba(0, 0, 0, 0.4);
   }
-  .col-environments .gallery-item:hover .pixel-window {
+  .gallery-row[data-accent="teal"] .gallery-item:hover .pixel-window {
     border-color: var(--accent-teal);
     box-shadow:
       0 0 16px rgba(107, 158, 138, 0.25),
       0 8px 32px rgba(0, 0, 0, 0.4);
   }
+  .gallery-row[data-accent="purple"] .gallery-item:hover .pixel-window {
+    border-color: var(--accent-purple);
+    box-shadow:
+      0 0 16px rgba(139, 123, 181, 0.25),
+      0 8px 32px rgba(0, 0, 0, 0.4);
+  }
 
-  /* ── Environments placeholder ────────────────── */
+  /* ── Placeholder ───────────────────────────────── */
   .env-placeholder {
     border: 2px dashed var(--border-color);
     padding: 3rem 1.5rem;
@@ -628,6 +726,10 @@ import Layout from "../layouts/Layout.astro";
     transition:
       opacity 0.5s ease 0.3s,
       transform 0.5s ease 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
   .env-placeholder.visible {
@@ -833,25 +935,24 @@ import Layout from "../layouts/Layout.astro";
 
   /* ── Responsive ──────────────────────────────── */
   @media (max-width: 900px) {
-    .gallery-grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
+    .row-track {
+      grid-template-columns: repeat(2, 1fr);
     }
 
-    .col-environments {
-      grid-column: 1 / -1;
-    }
-
-    .gallery-item {
-      --w: 100% !important;
-      align-self: stretch !important;
+    .gallery-row.has-carousel .gallery-item,
+    .gallery-row.has-carousel .env-placeholder {
+      min-width: calc((100% - 1.5rem) / 2);
     }
   }
 
   @media (max-width: 600px) {
-    .gallery-grid {
+    .row-track {
       grid-template-columns: 1fr;
-      gap: 2.5rem;
+    }
+
+    .gallery-row.has-carousel .gallery-item,
+    .gallery-row.has-carousel .env-placeholder {
+      min-width: 100%;
     }
 
     .gallery {
