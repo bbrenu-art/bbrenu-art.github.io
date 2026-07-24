@@ -45,13 +45,21 @@ for (const images of grouped.values()) {
   images.sort((a, b) => a.index - b.index);
 }
 
-if (grouped.has("others")) {
-  const others = grouped.get("others")!;
-  grouped.delete("others");
-  grouped.set("others", others);
+const preferredOrder = ["portrait", "ui", "architecture"];
+const sortedEntries: [string, GalleryImage[]][] = [];
+
+for (const key of preferredOrder) {
+  if (grouped.has(key)) {
+    sortedEntries.push([key, grouped.get(key)!]);
+    grouped.delete(key);
+  }
 }
 
-const themes = Array.from(grouped.entries());
+for (const [key, images] of grouped) {
+  sortedEntries.push([key, images]);
+}
+
+const themes = sortedEntries;
 ---
 
 <Layout>
@@ -257,8 +265,15 @@ const themes = Array.from(grouped.entries());
       page = Math.min(page, maxPage);
 
       const gap = 1.5 * 16;
-      const itemWidth = (track.parentElement!.clientWidth - gap * (perPage - 1)) / perPage;
-      const offset = page * (itemWidth + gap) * perPage;
+      const wrapperWidth = track.parentElement!.clientWidth;
+      const itemWidth = (wrapperWidth - gap * (perPage - 1)) / perPage;
+
+      items.forEach((el) => {
+        (el as HTMLElement).style.width = `${itemWidth}px`;
+        (el as HTMLElement).style.minWidth = `${itemWidth}px`;
+      });
+
+      const offset = page * perPage * (itemWidth + gap);
       track.style.transform = `translateX(-${offset}px)`;
 
       prevBtn.disabled = page === 0;
@@ -578,15 +593,19 @@ const themes = Array.from(grouped.entries());
   }
 
   .row-track-wrapper {
-    overflow: hidden;
+    overflow: visible;
     position: relative;
+  }
+
+  .gallery-row.has-carousel .row-track-wrapper {
+    overflow: visible;
   }
 
   .row-track {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
-    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .gallery-row.has-carousel .row-track {
@@ -637,7 +656,6 @@ const themes = Array.from(grouped.entries());
 
   .gallery-item:hover {
     z-index: 10;
-    transform: translateY(-4px) scale(1.03) !important;
   }
 
   /* ── Pixel window frame ──────────────────────── */
@@ -645,9 +663,17 @@ const themes = Array.from(grouped.entries());
     border: 2px solid var(--border-light);
     background: var(--bg-card);
     overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
     transition:
       border-color 0.3s ease,
-      box-shadow 0.3s ease;
+      box-shadow 0.3s ease,
+      transform 0.3s ease;
+  }
+
+  .gallery-item:hover .pixel-window {
+    transform: translateY(-4px) scale(1.03);
   }
 
   .window-bar {
@@ -682,6 +708,10 @@ const themes = Array.from(grouped.entries());
 
   .pixel-window img {
     width: 100%;
+    flex: 1;
+    min-height: 0;
+    max-width: 400px;
+    object-fit: cover;
     display: block;
   }
 
